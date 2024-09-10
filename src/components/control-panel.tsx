@@ -6,11 +6,13 @@ import { TabBlock, TabRowBlock } from "../library/tabs-block";
 import { IndentedListBlock } from "../library/indented-list-block";
 import { StandoffEditorBlock } from "../library/standoff-editor-block";
 import { BlockType, Caret, CARET, IBlock, IRange } from "../library/types";
+import { Phext, Coordinate } from "libphext";
 
 type Model = {
     command: string;
     file: string;
     template: string;
+    coordinate: Coordinate;
 }
 type Resources = {
     files: string[];
@@ -20,10 +22,12 @@ type Props = {
     manager?: BlockManager;
 }
 export const ControlPanel : Component<Props> = (props) => {
+    const phext = new Phext();
     const [model, setModel] = createStore<Model>({
         command: "",
         file: "",
-        template: ""
+        template: "",
+        coordinate: phext.to_coordinate("1.1.1/1.1.1/1.1.1")
     });
     const [resources, setResources] = createStore<Resources>({
         files: [], templates: []
@@ -62,7 +66,8 @@ export const ControlPanel : Component<Props> = (props) => {
     const loadTemplate = async (parameters: string[]) => {
         if (!props.manager) return;
         const filename = parameters && parameters[0] || model.file;
-        await props.manager.loadServerTemplate(filename);
+        const coordinate = parameters && phext.to_coordinate(parameters[1]) || model.coordinate;
+        await props.manager.loadServerTemplate(filename, coordinate);
     }
     const save = async (parameters: string[]) => {
         if (!props.manager) return;
@@ -86,7 +91,7 @@ export const ControlPanel : Component<Props> = (props) => {
     }
     const loadSelectedTemplateClicked = async (e: Event) => {
         e.preventDefault();
-        await loadTemplate([model.template]);
+        await loadTemplate([model.template, model.coordinate]);
     }
     const createCodeMirrorBlock = () => {
         const block = props.manager?.getBlockInFocus();
@@ -314,8 +319,12 @@ export const ControlPanel : Component<Props> = (props) => {
         }
     }
     onMount(async () => {
+        console.log(`---------------------- on Mount ---------------------`);
         const files = await props.manager?.listDocuments() as string[];
         const templates = await props.manager?.listTemplates() as string[];
+        console.log(`---------------------- ??? ---------------------`);
+        console.log(`files: ${files.join(', ')}`);
+        console.log(`templates: ${templates.join(', ')}`);
         setResources("files", files);
         setResources("templates", templates);
         setModel("file", files[0]);

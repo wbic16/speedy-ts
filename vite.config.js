@@ -8,6 +8,10 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: { external: ['libphext'] }
   },
+  optimizeDeps: {
+    include: ["@libphext"]
+  }
 });

@@ -23,6 +23,7 @@ import { renderToNode } from "./common";
 import { MonitorBlock, StandoffEditorBlockMonitor } from "../components/monitor";
 import { TableBlock, TableCellBlock, TableRowBlock } from './tables-blocks';
 import { classList } from 'solid-js/web';
+import { Coordinate } from "libphext";
 
 const isStr = (value: any) => typeof (value) == "string";
 const isNum = (value: any) => typeof (value) == "number";
@@ -2077,19 +2078,30 @@ export class BlockManager extends AbstractBlock implements IBlockManager {
         leftMargin.container.appendChild(hand);
     }
     async listDocuments() {
-        const res = await fetch("/api/listDocuments");
+        const res = await fetch("/api/loadDocumentPhext?phext=world-sample&coord=1.1.1;1.1.1;1.1.2");
+        console.log(`>>>> listDocs: ${res}`);
         const json = await res.json();
-        return json.files as string[];
+        console.log(`>>>> listDocs: ${json.Success}`);
+        if (!json.Success) {
+            return;
+        }
+        return json.Data.scroll.split('\n') as string[];
     }
     async listTemplates() {
-        const res = await fetch("/api/listDocuments?folder=templates");
+        console.log(`>>>> listTemplates: WTF`);
+        const res = await fetch("/api/loadDocumentPhext?phext=world-sample&coord=1.1.1;1.1.1;1.1.1");
         const json = await res.json();
-        return json.files as string[];
+        console.log(`>>>> listTemplates: ${json.Success}`);
+        if (!json.Success) {
+            return;
+        }
+        return json.Data.scroll.split('\n') as string[];
     }
-    async loadServerTemplate(filename: string) {
-        const res = await fetch("/api/loadDocumentJson?folder=templates&filename=" + filename, { method: "GET" });
+    async loadServerTemplate(filename: string, coordinate: Coordinate) {
+        //const res = await fetch("/api/loadDocumentJson?folder=templates&filename=" + filename, { method: "GET" });
+        const res = await fetch("/api/loadDocumentPhext?folder=templates&filename=" + filename + "&coord=" + coordinate.to_urlencoded(), { method: "GET" });
         const json = await res.json();
-        console.log("loadServerTemplate", { filename, json });
+        console.log("loadServerTemplate", { filename, coordinate, json });
         if (!json.Success) {
             return;
         }

@@ -8,6 +8,9 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      external: ['xxhash-addon']  
+    }
   },
 });

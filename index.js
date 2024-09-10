@@ -4,10 +4,12 @@ import multer from 'multer'
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import fs from "fs";
+import phext_pkg from 'libphext';
+const { Phext, Coordinate } = phext_pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const app = express(); 
+const app = express();
 app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use("/templates", express.static('templates'));
@@ -99,6 +101,21 @@ app.get('/api/loadDocumentJson', function(req, res) {
           Success: true,
           Data: {
                document: json
+          }
+     });
+});
+app.get('/api/loadDocumentPhext', function(req, res) {
+     const filename = req.query.phext;
+     const coordinate = req.query.coord ? req.query.coord : "1.1.1;1.1.1;1.1.1";
+     const folder = req.query?.folder || "data";
+     const filepath = path.join(__dirname + "/" + folder + "/" + filename + ".phext");
+     const data = fs.readFileSync(filepath);
+     const phext = new Phext();
+     const scroll = phext.fetch(data.toString(), phext.to_coordinate(coordinate));
+     res.send({
+          Success: true,
+          Data: {
+               scroll: scroll
           }
      });
 });
